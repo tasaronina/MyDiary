@@ -15,19 +15,22 @@ import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-
+    // Текстовое поле, куда я вывожу готовый отчёт.
     private lateinit var tvReport: TextView
-
+    // Кнопка для построения отчёта по выбранным чекбоксам.
     private lateinit var btnBuildReport: Button
-
+    // Кнопка для открытия новой страницы со списком рекомендаций (ЛР5).
+    private lateinit var btnOpenAdviceList: Button
+    // Нижнее меню навигации между экранами.
     private lateinit var bottomNav: BottomNavigationView
 
+    // Блок чекбоксов для хронических заболеваний.
     private lateinit var cbDiabetes: CheckBox
     private lateinit var cbHypertension: CheckBox
     private lateinit var cbMigraine: CheckBox
     private lateinit var cbAsthma: CheckBox
 
-
+    // Блок чекбоксов для симптомов за текущий день.
     private lateinit var cbHeadache: CheckBox
     private lateinit var cbDizziness: CheckBox
     private lateinit var cbNausea: CheckBox
@@ -38,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cbThirst: CheckBox
     private lateinit var cbBlurredVision: CheckBox
 
-
+    // Блок чекбоксов для возможных триггеров.
     private lateinit var cbStress: CheckBox
     private lateinit var cbLackOfSleep: CheckBox
     private lateinit var cbWeather: CheckBox
@@ -48,8 +51,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cbDiet: CheckBox
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        // чтобы сразу отображалась корректная тема
+        // Применяю тему Material3 до вызова super.onCreate,
+        // чтобы сразу отображалась корректная тема.
         setTheme(R.style.Theme_MyDiary)
 
         super.onCreate(savedInstanceState)
@@ -66,6 +69,11 @@ class MainActivity : AppCompatActivity() {
             tvReport.text = entry.report
         }
 
+        // Кнопка для перехода на новый экран со списком рекомендаций (ЛР5).
+        btnOpenAdviceList.setOnClickListener {
+            startActivity(Intent(this, AdviceListActivity::class.java))
+        }
+
         // Настраиваю нижнее меню: на главном экране активен пункт "Главная".
         bottomNav.selectedItemId = R.id.menu_home
         bottomNav.setOnItemSelectedListener { item ->
@@ -77,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                     startActivity(
                         Intent(this, SummaryActivity::class.java)
                             // Передаю объект HealthEntry через Intent
-
+                            // в соответствии с требованием варианта T1
                             .putExtra(HealthEntry.EXTRA_KEY, buildEntry())
                     )
                     true
@@ -100,10 +108,11 @@ class MainActivity : AppCompatActivity() {
         savedInstanceState?.getString(STATE_REPORT_TEXT)?.let { tvReport.text = it }
     }
 
-    // Отдельный метод где привязываюь все поля и чекбоксы к id из layout.
+    // Отдельный метод, где я "привязываю" все поля и чекбоксы к id из layout.
     private fun bindViews() {
         tvReport = findViewById(R.id.tvReport)
         btnBuildReport = findViewById(R.id.btnBuildReport)
+        btnOpenAdviceList = findViewById(R.id.btnOpenAdviceList)
         bottomNav = findViewById(R.id.bottomNav)
 
         cbDiabetes = findViewById(R.id.cbDiabetes)
@@ -192,22 +201,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Возвращаю готовый объект, который можно показать на этом экране
-
+        // и передать в другие активности через Intent.
         return HealthEntry(dateStr, diseases, symptoms, triggers, report)
     }
 
-    // Функция подбирает подсказки в зависимости от того что отмечено
-
+    // Функция подбирает подсказки (рекомендации) в зависимости от того,
+    // какие заболевания, симптомы и триггеры были отмечены.
     private fun makeHints(
         d: List<String>,
         s: List<String>,
         t: List<String>
     ): List<String> {
         val h = mutableListOf<String>()
-        // вспомогалка проверяю, присутствует ли строка в любом из списков
+        // Вспомогательная функция: проверяю, присутствует ли строка в любом из списков.
         fun has(x: String) = x in (d + s + t)
 
-        // если мигрень + триггеры и тд — добавляю подсказку про мигрень
+        // Пример: если мигрень + триггеры стресс/недосып/кофеин — добавляю подсказку про мигрень.
         if (has(getString(R.string.migraine)) &&
             (has(getString(R.string.tr_stress)) ||
                     has(getString(R.string.tr_lack_of_sleep)) ||
@@ -216,7 +225,7 @@ class MainActivity : AppCompatActivity() {
             h += getString(R.string.hint_migraine)
         }
 
-        // Для гипертонии и типичных симптомов добавляю соответствующую подсказку
+        // Для гипертонии и типичных симптомов добавляю соответствующую подсказку.
         if (has(getString(R.string.hypertension)) &&
             (has(getString(R.string.sym_chest_pain)) ||
                     has(getString(R.string.sym_dizziness)))
@@ -224,7 +233,7 @@ class MainActivity : AppCompatActivity() {
             h += getString(R.string.hint_hypertension)
         }
 
-        // Для астмы
+        // Для астмы учитываю одышку, нагрузку и погоду.
         if (has(getString(R.string.asthma)) &&
             (has(getString(R.string.sym_dyspnea)) ||
                     has(getString(R.string.tr_workout)) ||
@@ -233,7 +242,7 @@ class MainActivity : AppCompatActivity() {
             h += getString(R.string.hint_asthma)
         }
 
-        // Для диабета
+        // Для диабета обращаю внимание на жажду и туман в глазах.
         if (has(getString(R.string.diabetes)) &&
             (has(getString(R.string.sym_thirst)) ||
                     has(getString(R.string.sym_blurred_vision)))
@@ -244,18 +253,18 @@ class MainActivity : AppCompatActivity() {
         return h
     }
 
-    // Если ни один элемент не выбран возвращаю длинное тире
-    // иначе соединяю все элементы через запятую
+    // Если ни один элемент не выбран, возвращаю длинное тире,
+    // иначе соединяю все элементы через запятую.
     private fun fmtOrDash(items: List<String>) =
         if (items.isEmpty()) "—" else items.joinToString(", ")
 
-    // Универсальная функция: принимает пары чекбокс — подпись
-
+    // Универсальная функция: принимает пары "чекбокс — подпись"
+    // и возвращает список только тех подписей, у которых чекбокс отмечен.
     private fun selectedLabels(vararg pairs: Pair<CheckBox, String>): List<String> =
         pairs.filter { it.first.isChecked }.map { it.second }
 
-    // Сохраняю текст отчёта в Bundle при смене конфигурации
-    // чтобы после пересоздания активности восстановить его
+    // Сохраняю текст отчёта в Bundle при смене конфигурации (например, поворот экрана),
+    // чтобы после пересоздания активности восстановить его.
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(STATE_REPORT_TEXT, tvReport.text?.toString() ?: "")

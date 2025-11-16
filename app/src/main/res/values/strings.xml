@@ -52,4 +52,26 @@
     <string name="tab_home">Главная</string>
     <string name="tab_summary">Сводка</string>
     <string name="tab_tips">Подсказки</string>
+
+
+    <string name="advice_list_title">Персональные рекомендации</string>
+    <string name="advice_list_hint">Долгое нажатие по записи открывает контекстное меню. Свайп в сторону удаляет запись.</string>
+
+    <string name="advice_dialog_add_title">Новая рекомендация</string>
+    <string name="advice_dialog_edit_title">Редактирование рекомендации</string>
+    <string name="advice_dialog_title_hint">Краткий заголовок рекомендации</string>
+    <string name="advice_dialog_text_hint">Текст рекомендации</string>
+
+    <string name="advice_action_save">Сохранить</string>
+    <string name="advice_action_cancel">Отмена</string>
+
+    <string name="advice_context_add">Добавить запись</string>
+    <string name="advice_context_edit">Редактировать запись</string>
+
+    <string name="advice_default_title">Новая рекомендация</string>
+    <string name="advice_default_text">Текст рекомендации не заполнен.</string>
+
+    <string name="advice_open_list">РЕКОМЕНДАЦИИ (список)</string>
+    <string name="advice_back">Назад к дневнику</string>
+
 </resources>
