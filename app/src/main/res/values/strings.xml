@@ -74,4 +74,20 @@
     <string name="advice_open_list">РЕКОМЕНДАЦИИ (список)</string>
     <string name="advice_back">Назад к дневнику</string>
 
+    <!-- Меню -->
+    <string name="menu_clear_prefs">Сбросить сохранённые данные</string>
+    <string name="menu_clear_history">Очистить историю (внутренний файл)</string>
+    <string name="menu_delete_export">Удалить экспортированный файл</string>
+
+    <!-- Сводка и локальные хранилища -->
+    <string name="summary_title">Сводный отчёт</string>
+    <string name="history_title">История отчётов (внутренний бинарный файл)</string>
+    <string name="history_empty">История пока пуста.</string>
+    <string name="export_title">Экспортированный отчёт (бинарный файл в общем хранилище)</string>
+    <string name="export_empty">Экспортированный файл не найден.</string>
+    <string name="clear_prefs_button">Сбросить сохранённые данные</string>
+    <string name="clear_history_button">Очистить историю</string>
+    <string name="delete_export_button">Удалить экспортированный отчёт</string>
+
+
 </resources>

@@ -7,12 +7,14 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mydiary.model.HealthEntry
+import com.example.mydiary.util.DiaryStorage
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-
+// Главная активность приложения – здесь пользователь отмечает симптомы,
+// хронические заболевания и триггеры, а также формирует текстовый отчёт.
 class MainActivity : AppCompatActivity() {
 
     // Текстовое поле, куда я вывожу готовый отчёт.
@@ -21,6 +23,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnBuildReport: Button
     // Кнопка для открытия новой страницы со списком рекомендаций (ЛР5).
     private lateinit var btnOpenAdviceList: Button
+    // Кнопка для сброса сохранённых данных (SharedPreferences, S1).
+    private lateinit var btnClearPrefs: Button
     // Нижнее меню навигации между экранами.
     private lateinit var bottomNav: BottomNavigationView
 
@@ -61,58 +65,69 @@ class MainActivity : AppCompatActivity() {
         // Инициализирую все вьюшки из разметки.
         bindViews()
 
+        // Пытаюсь восстановить последнюю сохранённую запись из SharedPreferences
+        DiaryStorage.loadLastEntryFromPrefs(this)?.let { last ->
+            applyEntryToCheckboxes(last)
+            tvReport.text = last.report
+        }
+
         // Обработчик нажатия на кнопку "Сформировать отчёт".
         btnBuildReport.setOnClickListener {
-            // Собираю данные из чекбоксов в объект HealthEntry.
-            val entry = buildEntry()
-            // Показываю сформированный текст отчёта на текущем экране.
+            // Собираю данные, сохраняю их в хранилища (S1, S10) и показываю отчёт.
+            val entry = buildAndPersistEntry()
             tvReport.text = entry.report
         }
 
-        // Кнопка для перехода на новый экран со списком рекомендаций (ЛР5).
+        // Переход на экран со списком рекомендаций (ЛР5).
         btnOpenAdviceList.setOnClickListener {
             startActivity(Intent(this, AdviceListActivity::class.java))
+        }
+
+        // Сброс сохранённых данных (SharedPreferences, S1).
+        btnClearPrefs.setOnClickListener {
+            DiaryStorage.clearPrefs(this)
+            clearAllCheckboxes()
+            tvReport.text = ""
         }
 
         // Настраиваю нижнее меню: на главном экране активен пункт "Главная".
         bottomNav.selectedItemId = R.id.menu_home
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                // Если пользователь нажал "Главная", остаёмся на этом экране.
                 R.id.menu_home -> true
-                // Переход к экрану "Сводка".
+
                 R.id.menu_summary -> {
+                    val entry = buildAndPersistEntry()
                     startActivity(
                         Intent(this, SummaryActivity::class.java)
-                            // Передаю объект HealthEntry через Intent
-                            // в соответствии с требованием варианта T1
-                            .putExtra(HealthEntry.EXTRA_KEY, buildEntry())
+                            .putExtra(HealthEntry.EXTRA_KEY, entry)
                     )
                     true
                 }
-                // Переход к экрану "Подсказки".
+
                 R.id.menu_tips -> {
+                    val entry = buildAndPersistEntry()
                     startActivity(
                         Intent(this, TipsActivity::class.java)
-                            // Точно так же прикладываю к Intent сформированные данные.
-                            .putExtra(HealthEntry.EXTRA_KEY, buildEntry())
+                            .putExtra(HealthEntry.EXTRA_KEY, entry)
                     )
                     true
                 }
+
                 else -> false
             }
         }
 
-        // Восстанавливаю текст отчёта при перевороте экрана,
-        // чтобы данные не терялись при смене конфигурации.
+        // Восстанавливаю текст отчёта при перевороте экрана.
         savedInstanceState?.getString(STATE_REPORT_TEXT)?.let { tvReport.text = it }
     }
 
-    // Отдельный метод, где я "привязываю" все поля и чекбоксы к id из layout.
+    // Привязка всех элементов интерфейса к полям активности.
     private fun bindViews() {
         tvReport = findViewById(R.id.tvReport)
         btnBuildReport = findViewById(R.id.btnBuildReport)
         btnOpenAdviceList = findViewById(R.id.btnOpenAdviceList)
+        btnClearPrefs = findViewById(R.id.btnClearPrefs)
         bottomNav = findViewById(R.id.bottomNav)
 
         cbDiabetes = findViewById(R.id.cbDiabetes)
@@ -139,13 +154,19 @@ class MainActivity : AppCompatActivity() {
         cbDiet = findViewById(R.id.cbDiet)
     }
 
-    // Метод, который формирует объект HealthEntry на основе состояния всех чекбоксов.
+    // Строю объект HealthEntry и параллельно сохраняю его
+    private fun buildAndPersistEntry(): HealthEntry {
+        val entry = buildEntry()
+        DiaryStorage.saveLastEntryToPrefs(this, entry)       // SharedPreferences
+        DiaryStorage.appendHistoryInternal(this, entry)      // Внутренний бинарный файл (S10)
+        return entry
+    }
+
+    // Формирую объект HealthEntry из состояния всех чекбоксов.
     private fun buildEntry(): HealthEntry {
-        // Форматирую текущую дату и время для отчёта.
         val dateStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
             .format(Date())
 
-        // Собираю выбранные заболевания.
         val diseases = selectedLabels(
             cbDiabetes to getString(R.string.diabetes),
             cbHypertension to getString(R.string.hypertension),
@@ -153,7 +174,6 @@ class MainActivity : AppCompatActivity() {
             cbAsthma to getString(R.string.asthma)
         )
 
-        // Собираю отмеченные симптомы.
         val symptoms = selectedLabels(
             cbHeadache to getString(R.string.sym_headache),
             cbDizziness to getString(R.string.sym_dizziness),
@@ -166,7 +186,6 @@ class MainActivity : AppCompatActivity() {
             cbBlurredVision to getString(R.string.sym_blurred_vision)
         )
 
-        // Собираю возможные триггеры.
         val triggers = selectedLabels(
             cbStress to getString(R.string.tr_stress),
             cbLackOfSleep to getString(R.string.tr_lack_of_sleep),
@@ -177,7 +196,6 @@ class MainActivity : AppCompatActivity() {
             cbDiet to getString(R.string.tr_diet)
         )
 
-        // Формирую многострочный текст отчёта.
         val report = buildString {
             appendLine(getString(R.string.report_title))
             appendLine(getString(R.string.report_dt, dateStr))
@@ -187,7 +205,6 @@ class MainActivity : AppCompatActivity() {
             appendLine(getString(R.string.report_triggers, fmtOrDash(triggers)))
             appendLine()
 
-            // На основе выбранных значений формирую список подсказок.
             val hints = makeHints(diseases, symptoms, triggers)
             if (hints.isNotEmpty()) {
                 appendLine(getString(R.string.hints_title))
@@ -196,27 +213,53 @@ class MainActivity : AppCompatActivity() {
                 appendLine(getString(R.string.hints_empty))
             }
             appendLine()
-            // В конце добавляю дисклеймер, что это не является мед. рекомендацией.
             appendLine(getString(R.string.disclaimer))
         }
 
-        // Возвращаю готовый объект, который можно показать на этом экране
-        // и передать в другие активности через Intent.
         return HealthEntry(dateStr, diseases, symptoms, triggers, report)
     }
 
-    // Функция подбирает подсказки (рекомендации) в зависимости от того,
-    // какие заболевания, симптомы и триггеры были отмечены.
+    // Восстанавливаю чекбоксы из сохранённой записи.
+    private fun applyEntryToCheckboxes(entry: HealthEntry) {
+        val d = entry.diseases
+        val s = entry.symptoms
+        val t = entry.triggers
+
+        fun has(list: List<String>, resId: Int) = list.contains(getString(resId))
+
+        cbDiabetes.isChecked = has(d, R.string.diabetes)
+        cbHypertension.isChecked = has(d, R.string.hypertension)
+        cbMigraine.isChecked = has(d, R.string.migraine)
+        cbAsthma.isChecked = has(d, R.string.asthma)
+
+        cbHeadache.isChecked = has(s, R.string.sym_headache)
+        cbDizziness.isChecked = has(s, R.string.sym_dizziness)
+        cbNausea.isChecked = has(s, R.string.sym_nausea)
+        cbChestPain.isChecked = has(s, R.string.sym_chest_pain)
+        cbDyspnea.isChecked = has(s, R.string.sym_dyspnea)
+        cbWeakness.isChecked = has(s, R.string.sym_weakness)
+        cbTremor.isChecked = has(s, R.string.sym_tremor)
+        cbThirst.isChecked = has(s, R.string.sym_thirst)
+        cbBlurredVision.isChecked = has(s, R.string.sym_blurred_vision)
+
+        cbStress.isChecked = has(t, R.string.tr_stress)
+        cbLackOfSleep.isChecked = has(t, R.string.tr_lack_of_sleep)
+        cbWeather.isChecked = has(t, R.string.tr_weather)
+        cbMissedMed.isChecked = has(t, R.string.tr_missed_med)
+        cbCaffeine.isChecked = has(t, R.string.tr_caffeine)
+        cbWorkout.isChecked = has(t, R.string.tr_workout)
+        cbDiet.isChecked = has(t, R.string.tr_diet)
+    }
+
+    // Формирование подсказок по сочетанию симптомов/триггеров.
     private fun makeHints(
         d: List<String>,
         s: List<String>,
         t: List<String>
     ): List<String> {
         val h = mutableListOf<String>()
-        // Вспомогательная функция: проверяю, присутствует ли строка в любом из списков.
         fun has(x: String) = x in (d + s + t)
 
-        // Пример: если мигрень + триггеры стресс/недосып/кофеин — добавляю подсказку про мигрень.
         if (has(getString(R.string.migraine)) &&
             (has(getString(R.string.tr_stress)) ||
                     has(getString(R.string.tr_lack_of_sleep)) ||
@@ -225,7 +268,6 @@ class MainActivity : AppCompatActivity() {
             h += getString(R.string.hint_migraine)
         }
 
-        // Для гипертонии и типичных симптомов добавляю соответствующую подсказку.
         if (has(getString(R.string.hypertension)) &&
             (has(getString(R.string.sym_chest_pain)) ||
                     has(getString(R.string.sym_dizziness)))
@@ -233,7 +275,6 @@ class MainActivity : AppCompatActivity() {
             h += getString(R.string.hint_hypertension)
         }
 
-        // Для астмы учитываю одышку, нагрузку и погоду.
         if (has(getString(R.string.asthma)) &&
             (has(getString(R.string.sym_dyspnea)) ||
                     has(getString(R.string.tr_workout)) ||
@@ -242,7 +283,6 @@ class MainActivity : AppCompatActivity() {
             h += getString(R.string.hint_asthma)
         }
 
-        // Для диабета обращаю внимание на жажду и туман в глазах.
         if (has(getString(R.string.diabetes)) &&
             (has(getString(R.string.sym_thirst)) ||
                     has(getString(R.string.sym_blurred_vision)))
@@ -253,25 +293,29 @@ class MainActivity : AppCompatActivity() {
         return h
     }
 
-    // Если ни один элемент не выбран, возвращаю длинное тире,
-    // иначе соединяю все элементы через запятую.
     private fun fmtOrDash(items: List<String>) =
         if (items.isEmpty()) "—" else items.joinToString(", ")
 
-    // Универсальная функция: принимает пары "чекбокс — подпись"
-    // и возвращает список только тех подписей, у которых чекбокс отмечен.
     private fun selectedLabels(vararg pairs: Pair<CheckBox, String>): List<String> =
         pairs.filter { it.first.isChecked }.map { it.second }
 
-    // Сохраняю текст отчёта в Bundle при смене конфигурации (например, поворот экрана),
-    // чтобы после пересоздания активности восстановить его.
+    private fun clearAllCheckboxes() {
+        val boxes = listOf(
+            cbDiabetes, cbHypertension, cbMigraine, cbAsthma,
+            cbHeadache, cbDizziness, cbNausea, cbChestPain, cbDyspnea,
+            cbWeakness, cbTremor, cbThirst, cbBlurredVision,
+            cbStress, cbLackOfSleep, cbWeather, cbMissedMed,
+            cbCaffeine, cbWorkout, cbDiet
+        )
+        boxes.forEach { it.isChecked = false }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(STATE_REPORT_TEXT, tvReport.text?.toString() ?: "")
     }
 
     companion object {
-        // Ключ для сохранения и восстановления текста отчёта.
         private const val STATE_REPORT_TEXT = "state_report_text"
     }
 }

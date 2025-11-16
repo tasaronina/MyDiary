@@ -204,13 +204,21 @@
                 android:layout_height="wrap_content"
                 android:textSize="14sp" />
 
-
+            <!-- Кнопка для перехода на экран со списком рекомендаций (ЛР5). -->
             <Button
                 android:id="@+id/btnOpenAdviceList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/advice_open_list" />
+
+            <!-- Кнопка для явного сброса сохранённых данных (SharedPreferences, S1). -->
+            <Button
+                android:id="@+id/btnClearPrefs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/clear_prefs_button" />
 
         </LinearLayout>
     </ScrollView>
