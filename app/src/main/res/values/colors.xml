@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Основной цвет приложения -->
+    <color name="brand_primary">#2962FF</color>
+    <color name="bnv_unchecked">#80868B</color>
+</resources>

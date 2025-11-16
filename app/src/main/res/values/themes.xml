@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Material 3, без dynamic color -->
+    <style name="Theme.MyDiary" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Можно при желании добавить кастомные цвета -->
+    </style>
+</resources>

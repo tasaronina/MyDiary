@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HealthDiary</string>
+    <string name="app_title">Дневник здоровья (хронические заболевания)</string>
+
+    <string name="section_diseases">Хронические заболевания</string>
+    <string name="section_symptoms">Симптомы за сегодня</string>
+    <string name="section_triggers">Возможные триггеры</string>
+
+    <string name="diabetes">Диабет</string>
+    <string name="hypertension">Гипертония</string>
+    <string name="migraine">Мигрень</string>
+    <string name="asthma">Астма</string>
+
+    <string name="sym_headache">Головная боль</string>
+    <string name="sym_dizziness">Головокружение</string>
+    <string name="sym_nausea">Тошнота</string>
+    <string name="sym_chest_pain">Боль в груди</string>
+    <string name="sym_dyspnea">Одышка</string>
+    <string name="sym_weakness">Слабость</string>
+    <string name="sym_tremor">Тремор</string>
+    <string name="sym_thirst">Жажда/частое мочеиспускание</string>
+    <string name="sym_blurred_vision">Туман в глазах</string>
+
+    <string name="tr_stress">Стресс</string>
+    <string name="tr_lack_of_sleep">Недосып</string>
+    <string name="tr_weather">Погода/перепады давления</string>
+    <string name="tr_missed_med">Пропуск лекарства</string>
+    <string name="tr_caffeine">Кофеин</string>
+    <string name="tr_workout">Физнагрузка</string>
+    <string name="tr_diet">Питание (солёное/жирное/сладкое)</string>
+
+    <string name="btn_build">СФОРМИРОВАТЬ ОТЧЁТ</string>
+
+    <string name="report_title">Отчёт для визита к врачу</string>
+    <string name="report_dt">Дата/время: %1$s</string>
+    <string name="report_diseases">Хронические заболевания: %1$s</string>
+    <string name="report_symptoms">Симптомы за сегодня: %1$s</string>
+    <string name="report_triggers">Возможные триггеры: %1$s</string>
+
+    <string name="hints_title">Подсказки:</string>
+    <string name="hints_empty">Подсказки: —</string>
+    <string name="hint_migraine">Мигрень + стресс/недосып/кофеин: ведите дневник триггеров и режим сна.</string>
+    <string name="hint_hypertension">Гипертония + боль в груди/головокружение: мониторинг давления, оценка терапии.</string>
+    <string name="hint_asthma">Астма + одышка/нагрузка/погода: проверьте ингалятор и план действия.</string>
+    <string name="hint_diabetes">Диабет + жажда/«туман»: проверьте сахар, обсудите коррекцию терапии.</string>
+
+    <string name="disclaimer">Примечание: это не медицинская рекомендация. Обратитесь к врачу для интерпретации.</string>
+    <string name="summary_empty">Пока нет данных. Откройте «Главная» и сформируйте отчёт.</string>
+    <string name="tips_empty">Подсказок нет — отметьте данные на экране «Главная».</string>
+
+    <string name="tab_home">Главная</string>
+    <string name="tab_summary">Сводка</string>
+    <string name="tab_tips">Подсказки</string>
+</resources>

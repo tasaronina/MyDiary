@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:text="@string/app_title"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <!-- Хронические заболевания -->
+            <TextView
+                android:layout_marginTop="12dp"
+                android:text="@string/section_diseases"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <androidx.gridlayout.widget.GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:columnCount="2"
+                app:useDefaultMargins="true">
+
+                <CheckBox
+                    android:id="@+id/cbDiabetes"
+                    android:text="@string/diabetes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbHypertension"
+                    android:text="@string/hypertension"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbMigraine"
+                    android:text="@string/migraine"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbAsthma"
+                    android:text="@string/asthma"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </androidx.gridlayout.widget.GridLayout>
+
+            <!-- Симптомы -->
+            <TextView
+                android:layout_marginTop="12dp"
+                android:text="@string/section_symptoms"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <androidx.gridlayout.widget.GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:columnCount="2"
+                app:useDefaultMargins="true">
+
+                <CheckBox
+                    android:id="@+id/cbHeadache"
+                    android:text="@string/sym_headache"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbDizziness"
+                    android:text="@string/sym_dizziness"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbNausea"
+                    android:text="@string/sym_nausea"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbChestPain"
+                    android:text="@string/sym_chest_pain"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbDyspnea"
+                    android:text="@string/sym_dyspnea"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbWeakness"
+                    android:text="@string/sym_weakness"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbTremor"
+                    android:text="@string/sym_tremor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbThirst"
+                    android:text="@string/sym_thirst"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbBlurredVision"
+                    android:text="@string/sym_blurred_vision"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </androidx.gridlayout.widget.GridLayout>
+
+            <!-- Триггеры -->
+            <TextView
+                android:layout_marginTop="12dp"
+                android:text="@string/section_triggers"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <androidx.gridlayout.widget.GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:columnCount="2"
+                app:useDefaultMargins="true">
+
+                <CheckBox
+                    android:id="@+id/cbStress"
+                    android:text="@string/tr_stress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbLackOfSleep"
+                    android:text="@string/tr_lack_of_sleep"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbWeather"
+                    android:text="@string/tr_weather"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbMissedMed"
+                    android:text="@string/tr_missed_med"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbCaffeine"
+                    android:text="@string/tr_caffeine"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbWorkout"
+                    android:text="@string/tr_workout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <CheckBox
+                    android:id="@+id/cbDiet"
+                    android:text="@string/tr_diet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </androidx.gridlayout.widget.GridLayout>
+
+            <Button
+                android:id="@+id/btnBuildReport"
+                android:layout_marginTop="16dp"
+                android:text="@string/btn_build"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tvReport"
+                android:layout_marginTop="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:menu="@menu/bottom_nav_menu"
+        app:itemIconTint="@color/bnv_item_color"
+        app:itemTextColor="@color/bnv_item_color"
+        app:itemRippleColor="@color/bnv_item_ripple" />
+</LinearLayout>
