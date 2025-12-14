@@ -206,7 +206,7 @@
 
             <!-- Кнопка для перехода на экран со списком рекомендаций (ЛР5). -->
             <Button
-                android:id="@+id/btnOpenAdviceList"
+                android:id="@+id/btnAdviceList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"

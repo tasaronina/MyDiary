@@ -89,5 +89,6 @@
     <string name="clear_history_button">Очистить историю</string>
     <string name="delete_export_button">Удалить экспортированный отчёт</string>
 
-
+    <string name="save_export_button">Сохранить отчёт в файл</string>
+    <string name="load_export_button">Загрузить отчёт из файла</string>
 </resources>

@@ -8,12 +8,19 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mydiary.data.AdviceCategoryEntity
+import com.example.mydiary.data.AdviceDao
+import com.example.mydiary.data.AdviceEntity
+import com.example.mydiary.data.AppDatabase
 import com.example.mydiary.model.Advice
 import com.example.mydiary.util.AdviceAdapter
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AdviceListActivity : AppCompatActivity() {
 
@@ -21,30 +28,34 @@ class AdviceListActivity : AppCompatActivity() {
     private lateinit var adapter: AdviceAdapter
     private lateinit var btnBack: Button
 
-    // Коллекция объектов, которые отображаются в списке.
+    // Коллекция для отображения в RecyclerView.
     private val items = mutableListOf<Advice>()
 
-    // Позиция элемента, с которым сейчас работает контекстное меню.
+    // Позиция элемента, с которым работает контекстное меню.
     private var selectedPosition: Int = RecyclerView.NO_POSITION
 
-    // Счётчик для генерации уникальных id.
-    private var nextId: Long = 1L
+    // Room: ссылка на DAO и id категории "по умолчанию".
+    private lateinit var adviceDao: AdviceDao
+    private var defaultCategoryId: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_MyDiary)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_advice_list)
 
+        // Инициализирую БД и DAO.
+        val db = AppDatabase.getInstance(applicationContext)
+        adviceDao = db.adviceDao()
+
         recyclerView = findViewById(R.id.rvAdvice)
         btnBack = findViewById(R.id.btnAdviceBack)
 
-        // Кнопка "Назад к дневнику" просто закрывает текущую активность
-        // и возвращает пользователя на предыдущий экран (MainActivity).
+        // Кнопка "Назад к дневнику" — просто закрываю экран.
         btnBack.setOnClickListener {
             finish()
         }
 
-        // O1, N1 – вертикальный список, по одному элементу в строке.
+        // Вертикальный список.
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         adapter = AdviceAdapter(items) { position ->
@@ -54,40 +65,75 @@ class AdviceListActivity : AppCompatActivity() {
         }
         recyclerView.adapter = adapter
 
-        // Регистрирую RecyclerView для работы с контекстным меню (C1, U1).
+        // Регистрирую RecyclerView для контекстного меню.
         registerForContextMenu(recyclerView)
 
-        // Заполняю список несколькими стартовыми рекомендациями.
-        seedInitialData()
+        // Гружу данные из БД.
+        loadDataFromDb()
 
-        // Подключаю свайпы для удаления элементов (D1).
+        // Подключаю свайпы для удаления элементов.
         attachSwipeToDelete()
     }
 
-    private fun seedInitialData() {
-        items.add(
-            Advice(
-                id = nextId++,
-                title = "Контроль давления",
-                text = "Измерять артериальное давление утром и вечером и записывать значения в дневник."
-            )
-        )
-        items.add(
-            Advice(
-                id = nextId++,
-                title = "Режим сна",
-                text = "Стараться спать не менее 7–8 часов, ложиться и вставать в одно и то же время."
-            )
-        )
-        items.add(
-            Advice(
-                id = nextId++,
-                title = "Физическая активность",
-                text = "Ежедневная прогулка 20–30 минут в удобном темпе при отсутствии противопоказаний."
-            )
-        )
+    // Загружаю категорию и советы из БД, при первом запуске — создаю начальные записи.
+    private fun loadDataFromDb() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            // Категория по умолчанию для всех советов (простая группировка).
+            val categoryName = "Общие рекомендации"
+            val existingCategory = adviceDao.getCategoryByName(categoryName)
+            val categoryId = if (existingCategory != null) {
+                existingCategory.id
+            } else {
+                val newId = adviceDao.insertCategory(
+                    AdviceCategoryEntity(name = categoryName)
+                )
+                newId
+            }
+            defaultCategoryId = categoryId
 
-        adapter.notifyDataSetChanged()
+            // Читаю существующие советы по категории.
+            var advices = adviceDao.getAdvicesByCategory(defaultCategoryId)
+
+            // Если в таблице пусто — заполняю её стартовыми данными (как раньше в seedInitialData()).
+            if (advices.isEmpty()) {
+                val initialEntities = listOf(
+                    AdviceEntity(
+                        title = "Контроль давления",
+                        text = "Измерять артериальное давление утром и вечером и записывать значения в дневник.",
+                        categoryId = defaultCategoryId
+                    ),
+                    AdviceEntity(
+                        title = "Режим сна",
+                        text = "Стараться спать не менее 7–8 часов, ложиться и вставать в одно и то же время.",
+                        categoryId = defaultCategoryId
+                    ),
+                    AdviceEntity(
+                        title = "Физическая активность",
+                        text = "Ежедневная прогулка 20–30 минут в удобном темпе при отсутствии противопоказаний.",
+                        categoryId = defaultCategoryId
+                    )
+                )
+                val ids = adviceDao.insertAdvices(initialEntities)
+                // Перечитываю, чтобы получить все поля вместе с id.
+                advices = adviceDao.getAdvicesByCategory(defaultCategoryId)
+            }
+
+            // Преобразую сущности Room в модель для UI.
+            val uiItems = advices.map { entity ->
+                Advice(
+                    id = entity.id,
+                    title = entity.title,
+                    text = entity.text
+                )
+            }
+
+            // Обновляю список на главном потоке.
+            withContext(Dispatchers.Main) {
+                items.clear()
+                items.addAll(uiItems)
+                adapter.notifyDataSetChanged()
+            }
+        }
     }
 
     private fun attachSwipeToDelete() {
@@ -100,16 +146,30 @@ class AdviceListActivity : AppCompatActivity() {
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
-                // Перетаскивание элементов по условию варианта не требуется.
+                // Перетаскивание мне здесь не нужно.
                 return false
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                // Свайп по элементу — удаляю его из коллекции и уведомляю адаптер.
                 val pos = viewHolder.adapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
-                    items.removeAt(pos)
-                    adapter.notifyItemRemoved(pos)
+                    val advice = items[pos]
+
+                    // Сначала удаляю из БД, потом из списка.
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val entity = AdviceEntity(
+                            id = advice.id,
+                            title = advice.title,
+                            text = advice.text,
+                            categoryId = defaultCategoryId
+                        )
+                        adviceDao.deleteAdvice(entity)
+
+                        withContext(Dispatchers.Main) {
+                            items.removeAt(pos)
+                            adapter.notifyItemRemoved(pos)
+                        }
+                    }
                 }
             }
         }
@@ -117,7 +177,7 @@ class AdviceListActivity : AppCompatActivity() {
         ItemTouchHelper(callback).attachToRecyclerView(recyclerView)
     }
 
-    // Создание контекстного меню
+    // Создание контекстного меню.
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -131,13 +191,13 @@ class AdviceListActivity : AppCompatActivity() {
     override fun onContextItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_add -> {
-                // Создание новой записи через контекстное меню.
+                // Создание новой записи.
                 showEditDialog(isNew = true)
                 true
             }
 
             R.id.action_edit -> {
-                // Редактирование выбранного элемента через контекстное меню.
+                // Редактирование выбранного элемента.
                 if (selectedPosition != RecyclerView.NO_POSITION) {
                     showEditDialog(isNew = false)
                 }
@@ -170,24 +230,67 @@ class AdviceListActivity : AppCompatActivity() {
             .setTitle(dialogTitle)
             .setView(dialogView)
             .setPositiveButton(R.string.advice_action_save) { _, _ ->
-                val title = etTitle.text.toString().trim()
-                val text = etText.text.toString().trim()
+                val titleInput = etTitle.text.toString().trim()
+                val textInput = etText.text.toString().trim()
+
+                val finalTitle = if (titleInput.isNotEmpty()) {
+                    titleInput
+                } else {
+                    if (isNew) getString(R.string.advice_default_title)
+                    else items.getOrNull(selectedPosition)?.title ?: getString(R.string.advice_default_title)
+                }
+
+                val finalText = if (textInput.isNotEmpty()) {
+                    textInput
+                } else {
+                    if (isNew) getString(R.string.advice_default_text)
+                    else items.getOrNull(selectedPosition)?.text ?: getString(R.string.advice_default_text)
+                }
 
                 if (isNew) {
-                    // Создаю новый объект и добавляю его в коллекцию.
-                    val advice = Advice(
-                        id = nextId++,
-                        title = if (title.isNotEmpty()) title else getString(R.string.advice_default_title),
-                        text = if (text.isNotEmpty()) text else getString(R.string.advice_default_text)
-                    )
-                    items.add(advice)
-                    adapter.notifyItemInserted(items.lastIndex)
+                    // Добавляю новую запись в БД и в список.
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val entity = AdviceEntity(
+                            title = finalTitle,
+                            text = finalText,
+                            categoryId = defaultCategoryId
+                        )
+                        val newId = adviceDao.insertAdvice(entity)
+
+                        val newAdvice = Advice(
+                            id = newId,
+                            title = finalTitle,
+                            text = finalText
+                        )
+
+                        withContext(Dispatchers.Main) {
+                            items.add(newAdvice)
+                            adapter.notifyItemInserted(items.lastIndex)
+                        }
+                    }
                 } else if (selectedPosition != RecyclerView.NO_POSITION) {
-                    // Обновляю существующий элемент.
-                    val advice = items[selectedPosition]
-                    advice.title = if (title.isNotEmpty()) title else advice.title
-                    advice.text = if (text.isNotEmpty()) text else advice.text
-                    adapter.notifyItemChanged(selectedPosition)
+                    val oldAdvice = items[selectedPosition]
+
+                    // Обновляю модель и БД.
+                    val updatedAdvice = oldAdvice.copy(
+                        title = finalTitle,
+                        text = finalText
+                    )
+
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val entity = AdviceEntity(
+                            id = updatedAdvice.id,
+                            title = updatedAdvice.title,
+                            text = updatedAdvice.text,
+                            categoryId = defaultCategoryId
+                        )
+                        adviceDao.updateAdvice(entity)
+
+                        withContext(Dispatchers.Main) {
+                            items[selectedPosition] = updatedAdvice
+                            adapter.notifyItemChanged(selectedPosition)
+                        }
+                    }
                 }
             }
             .setNegativeButton(R.string.advice_action_cancel, null)

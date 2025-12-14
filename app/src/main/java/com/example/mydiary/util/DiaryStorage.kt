@@ -62,8 +62,8 @@ object DiaryStorage {
         prefs.edit().clear().apply()
     }
 
-    private fun encodeList(list: List<String>): String =
-        list.joinToString("|")
+    private fun encodeList(list: List<String>): String =//берёт все элементы списка и соединяет их в одну строку
+        list.joinToString("|")//между элементами ставит разделитель "|"
 
     private fun decodeList(value: String?): List<String> =
         if (value.isNullOrEmpty()) emptyList() else value.split("|")
